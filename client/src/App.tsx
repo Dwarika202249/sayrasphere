@@ -1,27 +1,43 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setLoading } from './features/auth/authSlice';
+import { setLoading, setCredentials } from './features/auth/authSlice';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Simulate initial auth check (check for token in localStorage)
-    setTimeout(() => {
-      dispatch(setLoading(false));
-    }, 500); // Small delay to show the loading spinner at app start
+    // Check for tokens
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      // In a real app we would hit a `/api/auth/me` to get the latest user profile
+      // But for Phase 0, we can decode the token or just trust the local storage
+      dispatch(
+        setCredentials({
+          user: { id: 'unknown', name: 'User', email: '', role: 'user' },
+          accessToken,
+        })
+      );
+    }
+    dispatch(setLoading(false));
   }, [dispatch]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oauth-success" element={<OAuthSuccessPage />} />
         
         <Route element={<ProtectedRoute />}>
           {/* Dashboard is wrapped inside ProtectedRoute */}

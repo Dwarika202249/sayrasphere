@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
+import { protect } from './middleware/authMiddleware';
 
 // Load env vars
 dotenv.config();
@@ -16,12 +17,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+import passport from 'passport';
+import './config/passport';
+
 // Routes
+app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {
   res.send('SayraSphere API is running...');
+});
+
+// Protected Test Route
+app.get('/api/test-protected', protect as any, (req: any, res: any) => {
+  res.json({ message: 'You have accessed a protected route!', user: req.user });
 });
 
 const PORT = process.env.PORT || 5000;

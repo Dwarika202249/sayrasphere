@@ -85,3 +85,53 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: { message: 'Server error', status: 500 } });
   }
 };
+
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(401).json({ error: { message: 'No refresh token provided', status: 401 } });
+      return;
+    }
+
+    const decoded = jsonwebtoken.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as { id: string };
+    const user = await User.findById(decoded.id);
+
+    if (!user || !user.refreshTokens.includes(refreshToken)) {
+      res.status(403).json({ error: { message: 'Invalid refresh token', status: 403 } });
+      return;
+    }
+
+    const newTokens = generateTokens(user.id);
+    
+    user.refreshTokens = user.refreshTokens.filter(t => t !== refreshToken);
+    user.refreshTokens.push(newTokens.refreshToken);
+    await user.save();
+
+    res.status(200).json(newTokens);
+  } catch (error) {
+    res.status(403).json({ error: { message: 'Invalid refresh token', status: 403 } });
+  }
+};
+
+export const logoutUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (refreshToken) {
+      const decoded = jsonwebtoken.decode(refreshToken) as { id: string };
+      if (decoded && decoded.id) {
+        const user = await User.findById(decoded.id);
+        if (user) {
+          user.refreshTokens = user.refreshTokens.filter(t => t !== refreshToken);
+          await user.save();
+        }
+      }
+    }
+    
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ error: { message: 'Server error', status: 500 } });
+  }
+};
