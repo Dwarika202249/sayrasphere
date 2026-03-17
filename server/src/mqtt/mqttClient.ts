@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { Device } from '../models/Device';
 import { Command } from '../models/Command';
+import { automationEngine } from '../services/automationEngine';
 import { Server as SocketIOServer } from 'socket.io'; // We'll pass io instance here
 
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';

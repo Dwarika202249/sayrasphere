@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import AutomationPage from './pages/AutomationPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -43,7 +44,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           {/* Dashboard is wrapped inside ProtectedRoute */}
           <Route path="/" element={<DashboardPage />} />
-          {/* Add more protected routes here like /devices, /automation etc */}
+          <Route path="/automation" element={<AutomationPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

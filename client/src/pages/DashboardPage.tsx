@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../app/store';
 import { logout } from '../features/auth/authSlice';
 import { fetchDevices } from '../features/devices/devicesSlice';
@@ -8,6 +9,7 @@ import DeviceGrid from '../components/dashboard/DeviceGrid';
 
 const DashboardPage = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const { items: devices, loading, error } = useSelector((state: RootState) => state.devices);
 
@@ -29,12 +31,20 @@ const DashboardPage = () => {
             <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-500">Welcome back, {user?.name}</p>
           </div>
-          <button
-            onClick={() => dispatch(logout())}
-            className="px-4 py-2 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 font-medium transition-colors"
-          >
-            Log out
-          </button>
+          <div className="flex space-x-3">
+             <button
+               onClick={() => navigate('/automation')}
+               className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 font-medium transition-colors"
+             >
+               Automations
+             </button>
+             <button
+               onClick={() => dispatch(logout())}
+               className="px-4 py-2 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 font-medium transition-colors"
+             >
+               Log out
+             </button>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
