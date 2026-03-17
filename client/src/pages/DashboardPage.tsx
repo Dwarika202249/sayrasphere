@@ -1,10 +1,25 @@
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../app/store';
+import type { RootState, AppDispatch } from '../app/store';
 import { logout } from '../features/auth/authSlice';
+import { fetchDevices } from '../features/devices/devicesSlice';
+import { useSocket } from '../hooks/useSocket';
+import DeviceGrid from '../components/dashboard/DeviceGrid';
 
 const DashboardPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { items: devices, loading, error } = useSelector((state: RootState) => state.devices);
+
+  // Initialize Socket.IO connection
+  useSocket();
+
+  // Fetch initial device layout
+  useEffect(() => {
+    dispatch(fetchDevices());
+  }, [dispatch]);
+
+  const onlineDevices = devices.filter(d => d.status === 'online').length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -23,25 +38,23 @@ const DashboardPage = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Devices</h3>
-            <p className="text-3xl font-bold text-indigo-600">0</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Total Devices</h3>
+            <p className="text-3xl font-bold text-indigo-600">{devices.length}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Automations</h3>
-            <p className="text-3xl font-bold text-emerald-600">0</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Online Engines</h3>
+            <p className="text-3xl font-bold text-emerald-600">{onlineDevices}</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Recent Alerts</h3>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Recent Alerts</h3>
             <p className="text-3xl font-bold text-amber-600">0</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 min-h-[100]">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Your Devices</h2>
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No devices configured yet.
-          </div>
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Devices</h2>
+          <DeviceGrid devices={devices} loading={loading} error={error} />
         </div>
       </div>
     </div>
