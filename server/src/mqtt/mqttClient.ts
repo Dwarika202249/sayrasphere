@@ -1,21 +1,24 @@
 import mqtt from 'mqtt';
 import { Device } from '../models/Device';
+import { Command } from '../models/Command';
 import { Server as SocketIOServer } from 'socket.io'; // We'll pass io instance here
 
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
+let mqttClient: mqtt.MqttClient;
 
 export const connectMQTT = (io: SocketIOServer) => {
-  const client = mqtt.connect(MQTT_BROKER);
+  mqttClient = mqtt.connect(MQTT_BROKER);
 
-  client.on('connect', () => {
+  mqttClient.on('connect', () => {
     console.log(`Connected to MQTT Broker at ${MQTT_BROKER}`);
 
     // Subscribe to all device telemetry and status changes
-    client.subscribe('sayrasphere/devices/+/telemetry');
-    client.subscribe('sayrasphere/devices/+/status');
+    mqttClient.subscribe('sayrasphere/devices/+/telemetry');
+    mqttClient.subscribe('sayrasphere/devices/+/status');
+    mqttClient.subscribe('sayrasphere/devices/+/ack');
   });
 
-  client.on('message', async (topic, message) => {
+  mqttClient.on('message', async (topic: string, message: Buffer) => {
     try {
       const payload = JSON.parse(message.toString());
       const topicParts = topic.split('/');
@@ -54,6 +57,17 @@ export const connectMQTT = (io: SocketIOServer) => {
         if (updatedDevice) {
            io.emit('device:status', { id: deviceId, status: payload.status, lastPing: updatedDevice.lastPing });
         }
+      } else if (messageType === 'ack') {
+        // Find the command and mark it as completed
+        const updatedCommand = await Command.findByIdAndUpdate(
+          payload.commandId,
+          { status: 'completed' },
+          { returnDocument: 'after' }
+        );
+        
+        if (updatedCommand) {
+          io.emit('command:ack', { commandId: updatedCommand._id, deviceId, status: 'completed' });
+        }
       }
 
     } catch (error) {
@@ -61,9 +75,16 @@ export const connectMQTT = (io: SocketIOServer) => {
     }
   });
 
-  client.on('error', (err) => {
+  mqttClient.on('error', (err: any) => {
     console.error('MQTT Connection Error:', err);
   });
 
-  return client;
+  return mqttClient;
+};
+
+export const getMQTTClient = (): mqtt.MqttClient => {
+  if (!mqttClient) {
+    throw new Error('MQTT Client not initialized');
+  }
+  return mqttClient;
 };

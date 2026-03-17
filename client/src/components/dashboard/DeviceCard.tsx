@@ -1,6 +1,10 @@
 import React from 'react';
 import type { Device } from '../../features/devices/devicesSlice';
-import { Activity, Thermometer, Lightbulb, Power, Camera, Server } from 'lucide-react';
+import { sendCommandAction, optimisticCommandUpdate } from '../../features/devices/devicesSlice';
+import { useAppDispatch } from '../../app/store';
+import { Activity, Thermometer, Lightbulb, Power, Camera, Server, Loader2 } from 'lucide-react';
+import { Switch } from '../ui/switch';
+import toast from 'react-hot-toast';
 
 interface DeviceCardProps {
   device: Device;
@@ -41,6 +45,26 @@ const formatValue = (device: Device) => {
 
 const DeviceCard: React.FC<DeviceCardProps> = ({ device }) => {
   const isOnline = device.status === 'online';
+  const dispatch = useAppDispatch();
+  const [isCommandPending, setIsCommandPending] = React.useState(false);
+
+  const handleToggle = async (checked: boolean) => {
+    setIsCommandPending(true);
+    
+    // Optimistically update the UI locally so the switch visually flips immediately
+    dispatch(optimisticCommandUpdate({ deviceId: device._id, action: 'toggle', value: checked }));
+
+    try {
+      await dispatch(sendCommandAction({ deviceId: device._id, action: 'toggle', value: checked })).unwrap();
+      toast.success(`${device.name} turned ${checked ? 'ON' : 'OFF'}`);
+    } catch (error: any) {
+      toast.error(`Failed to flip ${device.name}: ${error}`);
+      // Revert optimistic update on failure by dispatching original reality
+      dispatch(optimisticCommandUpdate({ deviceId: device._id, action: 'toggle', value: !checked }));
+    } finally {
+      setIsCommandPending(false);
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
@@ -62,12 +86,26 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device }) => {
       </div>
 
       <div className="mt-4">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate" title={device.name}>
-          {device.name}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-          {device.metadata?.location || 'Unknown Location'}
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate" title={device.name}>
+              {device.name}
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+              {device.metadata?.location || 'Unknown Location'}
+            </p>
+          </div>
+          {device.type === 'switch' && (
+            <div className="flex items-center space-x-2">
+               {isCommandPending && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+               <Switch 
+                 checked={device.currentValue?.state || false}
+                 onCheckedChange={handleToggle}
+                 disabled={isCommandPending}
+               />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 pt-4 border-t border-gray-50 dark:border-gray-700 flex items-center justify-between">

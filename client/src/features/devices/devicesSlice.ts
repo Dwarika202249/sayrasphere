@@ -27,18 +27,33 @@ const initialState: DevicesState = {
   error: null,
 };
 
-// Async thunk to fetch initial devices list via REST
+// Async Thunk matching Phase 1
 export const fetchDevices = createAsyncThunk(
-  "devices/fetchAll",
-  async (_, thunkAPI) => {
-    try {
-      const response = await api.get("/devices");
-      return response.data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.error?.message || "Failed to fetch devices",
-      );
-    }
+  "devices/fetchDevices",
+  async () => {
+    const response = await api.get("/devices");
+    return response.data;
+  },
+);
+
+// Phase 2: Send Command
+export const sendCommandAction = createAsyncThunk(
+  "devices/sendCommandAction",
+  async ({
+    deviceId,
+    action,
+    value,
+  }: {
+    deviceId: string;
+    action: string;
+    value: any;
+  }) => {
+    const response = await api.post("/commands", {
+      deviceId,
+      action,
+      value,
+    });
+    return response.data;
   },
 );
 
@@ -75,6 +90,23 @@ const devicesSlice = createSlice({
         state.items[idx].lastPing = action.payload.lastPing;
       }
     },
+    // Optimistic UI updates based on the command that was sent
+    optimisticCommandUpdate: (
+      state,
+      action: PayloadAction<{ deviceId: string; action: string; value: any }>,
+    ) => {
+      const index = state.items.findIndex(
+        (d) => d._id === action.payload.deviceId,
+      );
+      if (index !== -1) {
+        if (action.payload.action === "toggle") {
+          state.items[index].currentValue.state = action.payload.value;
+          state.items[index].status = action.payload.value
+            ? "online"
+            : "offline";
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -93,7 +125,10 @@ const devicesSlice = createSlice({
   },
 });
 
-export const { updateDeviceTelemetry, updateDeviceStatus } =
-  devicesSlice.actions;
+export const {
+  updateDeviceTelemetry,
+  updateDeviceStatus,
+  optimisticCommandUpdate,
+} = devicesSlice.actions;
 
 export default devicesSlice.reducer;

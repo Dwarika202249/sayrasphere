@@ -12,6 +12,9 @@ const MOCK_DEVICES = [
 client.on('connect', () => {
   console.log(`Simulator connected to ${MQTT_BROKER}!`);
 
+  // Subscribe to command topics for all devices
+  client.subscribe('sayrasphere/devices/+/command');
+
   setInterval(() => {
     // 1. Simulate Temp Sensor
     const tempSensor = MOCK_DEVICES[0];
@@ -30,6 +33,30 @@ client.on('connect', () => {
     client.publish(statusTopic, JSON.stringify({ status: isOnline }));
     
   }, 4000); // Push updates every 4 seconds
+});
+
+client.on('message', (topic, message) => {
+  if (topic.endsWith('/command')) {
+    const topicParts = topic.split('/');
+    const deviceId = topicParts[2];
+    const payload = JSON.parse(message.toString());
+
+    console.log(`[RCVD CMD] Device ${deviceId}: ${payload.action} -> ${payload.value}`);
+
+    // Pre-suppose the hardware needs 500ms to physically actuate
+    setTimeout(() => {
+      // 1. Send the ACK back to verify completion
+      const ackTopic = `sayrasphere/devices/${deviceId}/ack`;
+      client.publish(ackTopic, JSON.stringify({ commandId: payload.commandId, status: 'completed' }));
+      console.log(`[PUB ACK]  Device ${deviceId} finished command ${payload.commandId}`);
+
+      // 2. Publish new status to reflect state change immediately
+      if (payload.action === 'toggle') {
+        const statusTopic = `sayrasphere/devices/${deviceId}/status`;
+        client.publish(statusTopic, JSON.stringify({ status: payload.value ? 'online' : 'offline' }));
+      }
+    }, 500);
+  }
 });
 
 client.on('error', (err) => {
