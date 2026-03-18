@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
 import { protect } from './middleware/authMiddleware';
@@ -9,11 +9,10 @@ import deviceRoutes from './routes/deviceRoutes';
 import commandRoutes from './routes/commandRoutes';
 import ruleRoutes from './routes/ruleRoutes';
 import telemetryRoutes from './routes/telemetryRoutes';
+import aiRoutes from './routes/aiRoutes';
 import { initSocket } from './socket/socketServer';
 import { connectMQTT } from './mqtt/mqttClient';
-
-// Load env vars
-dotenv.config();
+import { initCronJobs } from './services/cronService';
 
 // Connect to database
 connectDB();
@@ -23,6 +22,9 @@ const server = http.createServer(app);
 
 // Initialize WebSockets
 const io = initSocket(server);
+
+// Initialize AI Cron Jobs
+initCronJobs();
 
 // Initialize MQTT
 connectMQTT(io);
@@ -41,6 +43,7 @@ app.use('/api/devices', deviceRoutes);
 app.use('/api/commands', commandRoutes);
 app.use('/api/rules', ruleRoutes);
 app.use('/api/telemetry', telemetryRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

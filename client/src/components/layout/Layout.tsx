@@ -1,6 +1,6 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import AIChatBox from '../ai/AIChatBox';
 
 const Layout: React.FC = () => {
   return (
@@ -9,6 +9,7 @@ const Layout: React.FC = () => {
       <main className="mx-auto w-full">
          <Outlet />
       </main>
+      <AIChatBox />
     </div>
   );
 };

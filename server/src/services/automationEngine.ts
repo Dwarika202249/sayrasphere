@@ -1,6 +1,8 @@
 import { AutomationRule, IAutomationRule } from '../models/AutomationRule';
 import { Command } from '../models/Command';
 import { getMQTTClient } from '../mqtt/mqttClient';
+import { generateDeviceSummary, detectAnomalies } from './aiService';
+import { DeviceSummary } from '../models/DeviceSummary';
 
 class AutomationEngine {
   private activeRules: IAutomationRule[] = [];
@@ -86,6 +88,27 @@ class AutomationEngine {
           console.log(`[Automation] Dispatched action: ${rule.action.command} to device ${rule.action.deviceId}`);
         }
       });
+
+      // 3. Dispatch Background Emergency AI Analysis Override (Phase 5.5)
+      setTimeout(async () => {
+        try {
+          console.log(`[Automation] Triggering Emergency AI Synthesis for device ${rule.trigger.deviceId}...`);
+          const [summary, anomaly] = await Promise.all([
+            generateDeviceSummary(rule.trigger.deviceId.toString()),
+            detectAnomalies(rule.trigger.deviceId.toString())
+          ]);
+          await DeviceSummary.create({
+            deviceId: rule.trigger.deviceId,
+            summary,
+            anomaly,
+            type: 'Emergency'
+          });
+          console.log(`[Automation] Emergency AI Override committed to DB for device ${rule.trigger.deviceId}`);
+        } catch (err: any) {
+          console.error('[Automation] Background Emergency AI Override Failed:', err.message);
+        }
+      }, 0);
+
     } catch (error) {
       console.error('[Automation] Action Execution Error:', error);
     }
