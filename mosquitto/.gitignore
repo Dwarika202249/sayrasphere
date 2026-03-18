@@ -1,0 +1,6 @@
+# Mosquitto data and logs
+data/
+log/
+
+# Except the initial empty files if needed (usually handled by .gitkeep)
+# But here we just ignore the dirs entirely to avoid committing DB/logs

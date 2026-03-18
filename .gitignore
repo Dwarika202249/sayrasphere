@@ -1,1 +1,17 @@
-docs/
+# Dependencies
+node_modules/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# IDEs and OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Project specific
+# We want to keep docs/ so removing the previous docs/ exclusion if it exists

@@ -6,10 +6,17 @@ import { automationEngine } from '../services/automationEngine';
 import { Server as SocketIOServer } from 'socket.io'; // We'll pass io instance here
 
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
+const MQTT_USER = process.env.MQTT_USER;
+const MQTT_PASS = process.env.MQTT_PASS;
+
 let mqttClient: mqtt.MqttClient;
 
 export const connectMQTT = (io: SocketIOServer) => {
-  mqttClient = mqtt.connect(MQTT_BROKER);
+  mqttClient = mqtt.connect(MQTT_BROKER, {
+    username: MQTT_USER,
+    password: MQTT_PASS,
+    rejectUnauthorized: false, // Often needed for some cloud MQTT TLS configs if not providing CA
+  });
 
   mqttClient.on('connect', () => {
     console.log(`Connected to MQTT Broker at ${MQTT_BROKER}`);

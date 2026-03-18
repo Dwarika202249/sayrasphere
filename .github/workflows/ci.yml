@@ -1,0 +1,45 @@
+name: SayraSphere CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+
+      # Client Checks
+      - name: Install Client Dependencies
+        run: cd client && npm install --legacy-peer-deps
+      
+      - name: Lint Client
+        run: cd client && npm run lint
+
+      - name: Build Client (Verification)
+        run: cd client && npm run build
+        env:
+          VITE_API_URL: https://api.placeholder.com
+          VITE_SOCKET_URL: https://api.placeholder.com
+
+      # Server Checks
+      - name: Install Server Dependencies
+        run: cd server && npm install --legacy-peer-deps
+
+      - name: Type-check Server
+        run: cd server && npx tsc --noEmit
+
+      - name: Build Server (Verification)
+        run: cd server && npm run build
