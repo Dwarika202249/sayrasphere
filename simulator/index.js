@@ -1,4 +1,15 @@
 import mqtt from 'mqtt';
+import http from 'http';
+import 'dotenv/config';
+
+// Minimal HTTP server for Render health checks
+const port = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Simulator Running');
+}).listen(port, () => {
+  console.log(`Health check server listening on port ${port}`);
+});
 
 // Uses HiveMQ Cloud or Local Mosquitto
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
