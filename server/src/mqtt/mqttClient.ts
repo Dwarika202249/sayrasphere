@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { Device } from '../models/Device';
 import { Command } from '../models/Command';
+import { Telemetry } from '../models/Telemetry';
 import { automationEngine } from '../services/automationEngine';
 import { Server as SocketIOServer } from 'socket.io'; // We'll pass io instance here
 
@@ -43,6 +44,18 @@ export const connectMQTT = (io: SocketIOServer) => {
         if (updatedDevice) {
            io.emit('device:update', { id: deviceId, currentValue: payload, lastPing: updatedDevice.lastPing });
         }
+
+        // --- PHASE 4: Save Historical Telemetry to MongoDB ---
+        if (Object.keys(payload).length > 0) {
+           await Telemetry.create({
+             deviceId: updatedDevice?._id,
+             metrics: payload
+           });
+        }
+
+        // --- PHASE 3: Fire new reading into the Automation Engine ---
+        automationEngine.evaluateTelemetry(deviceId, payload);
+
       } 
       else if (messageType === 'status') {
         updatedDevice = await Device.findByIdAndUpdate(

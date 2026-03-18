@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AutomationPage from './pages/AutomationPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 function App() {
   const dispatch = useDispatch();
@@ -45,6 +46,7 @@ function App() {
           {/* Dashboard is wrapped inside ProtectedRoute */}
           <Route path="/" element={<DashboardPage />} />
           <Route path="/automation" element={<AutomationPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

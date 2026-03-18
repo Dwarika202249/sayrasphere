@@ -8,6 +8,7 @@ import { protect } from './middleware/authMiddleware';
 import deviceRoutes from './routes/deviceRoutes';
 import commandRoutes from './routes/commandRoutes';
 import ruleRoutes from './routes/ruleRoutes';
+import telemetryRoutes from './routes/telemetryRoutes';
 import { initSocket } from './socket/socketServer';
 import { connectMQTT } from './mqtt/mqttClient';
 
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/commands', commandRoutes);
 app.use('/api/rules', ruleRoutes);
+app.use('/api/telemetry', telemetryRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

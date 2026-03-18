@@ -33,6 +33,12 @@ const DashboardPage = () => {
           </div>
           <div className="flex space-x-3">
              <button
+               onClick={() => navigate('/analytics')}
+               className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-md hover:bg-emerald-100 font-medium transition-colors"
+             >
+               Analytics
+             </button>
+             <button
                onClick={() => navigate('/automation')}
                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 font-medium transition-colors"
              >
