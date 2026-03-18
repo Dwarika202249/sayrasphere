@@ -13,12 +13,12 @@ export interface Device {
   lastPing: string;
   lastSeen?: string;
   uptimeSince?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   location?: {
     lat: number;
     lng: number;
   };
-  currentValue?: any;
+  currentValue?: Record<string, unknown>;
 }
 
 interface DevicesState {
@@ -52,7 +52,7 @@ export const sendCommandAction = createAsyncThunk(
   }: {
     deviceId: string;
     action: string;
-    value: any;
+    value: unknown;
   }) => {
     const response = await api.post("/commands", {
       deviceId,
@@ -72,7 +72,7 @@ const devicesSlice = createSlice({
       state,
       action: PayloadAction<{
         id: string;
-        currentValue: any;
+        currentValue: Record<string, unknown>;
         lastPing: string;
       }>,
     ) => {
@@ -99,14 +99,17 @@ const devicesSlice = createSlice({
     // Optimistic UI updates based on the command that was sent
     optimisticCommandUpdate: (
       state,
-      action: PayloadAction<{ deviceId: string; action: string; value: any }>,
+      action: PayloadAction<{ deviceId: string; action: string; value: unknown }>,
     ) => {
       const index = state.items.findIndex(
         (d) => d._id === action.payload.deviceId,
       );
       if (index !== -1) {
         if (action.payload.action === "toggle") {
-          state.items[index].currentValue.state = action.payload.value;
+          const device = state.items[index];
+          if (device.currentValue) {
+            device.currentValue.state = action.payload.value;
+          }
           state.items[index].status = action.payload.value
             ? "online"
             : "offline";

@@ -23,7 +23,7 @@ export const useSocket = () => {
       console.log('Connected to WebSocket server:', socket.id);
     });
 
-    socket.on('device:update', (data: { id: string; currentValue: any; lastPing: string }) => {
+    socket.on('device:update', (data: { id: string; currentValue: Record<string, unknown>; lastPing: string }) => {
       dispatch(updateDeviceTelemetry(data));
     });
 
@@ -53,6 +53,4 @@ export const useSocket = () => {
       }
     };
   }, [dispatch]);
-
-  return socketRef.current;
 };

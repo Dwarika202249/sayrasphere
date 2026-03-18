@@ -5,7 +5,7 @@ export interface TelemetryData {
   _id: string;
   deviceId: string;
   timestamp: string;
-  metrics: Record<string, any>;
+  metrics: Record<string, unknown>;
 }
 
 interface TelemetryState {

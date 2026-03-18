@@ -55,16 +55,16 @@ const DeviceHealthCard: React.FC<DeviceHealthCardProps> = ({ device }) => {
       </div>
 
       {/* Bottom Row: Stats */}
-      <div className="flex items-center gap-4 pl-6">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pl-0 sm:pl-6">
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
           <Activity className="w-3 h-3 shrink-0" />
           <span>Uptime:</span>
           <span className={`font-bold ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>
             {isOnline ? uptime : 'Offline'}
           </span>
         </div>
-        <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <div className="hidden sm:block w-px h-4 bg-gray-200 dark:bg-gray-700" />
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
           <Clock className="w-3 h-3 shrink-0" />
           <span>Seen:</span>
           <span className="font-bold text-gray-700 dark:text-gray-300">{lastSeen}</span>

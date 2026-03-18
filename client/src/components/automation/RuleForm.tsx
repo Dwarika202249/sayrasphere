@@ -26,14 +26,17 @@ const RuleForm: React.FC<RuleFormProps> = ({ devices, onComplete }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !triggerDevice || !triggerValue || !actionDevice || !actionValue) {
+    const selectedTriggerDevice = devices.find(d => d._id === triggerDevice);
+    const selectedActionDevice = devices.find(d => d._id === actionDevice);
+
+    if (!name || !selectedTriggerDevice || !triggerValue || !selectedActionDevice || !actionValue) {
       toast.error("Please fill out all rule fields");
       return;
     }
 
     try {
       // Parse boolean equivalents for action value
-      let parsedActionValue: any = actionValue;
+      let parsedActionValue: unknown = actionValue;
       if (actionValue.toLowerCase() === 'true') parsedActionValue = true;
       if (actionValue.toLowerCase() === 'false') parsedActionValue = false;
       
@@ -43,13 +46,13 @@ const RuleForm: React.FC<RuleFormProps> = ({ devices, onComplete }) => {
       await dispatch(createRuleAction({
         name,
         trigger: {
-          deviceId: triggerDevice,
+          deviceId: { _id: selectedTriggerDevice._id, name: selectedTriggerDevice.name, type: selectedTriggerDevice.type },
           metric,
           operator,
           value: isNaN(parsedTriggerValue) ? triggerValue : parsedTriggerValue
         },
         action: {
-          deviceId: actionDevice,
+          deviceId: { _id: selectedActionDevice._id, name: selectedActionDevice.name, type: selectedActionDevice.type },
           command,
           value: parsedActionValue
         },
@@ -58,8 +61,9 @@ const RuleForm: React.FC<RuleFormProps> = ({ devices, onComplete }) => {
 
       toast.success("Automation Rule saved!");
       onComplete();
-    } catch (err: any) {
-       toast.error(`Failed to create rule: ${err.message || err}`);
+    } catch (err: unknown) {
+       const message = err instanceof Error ? err.message : String(err);
+       toast.error(`Failed to create rule: ${message}`);
     }
   };
 

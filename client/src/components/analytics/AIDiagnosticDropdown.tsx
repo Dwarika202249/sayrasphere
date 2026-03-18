@@ -11,7 +11,14 @@ const AIDiagnosticDropdown: React.FC = () => {
   const { items: devices } = useSelector((state: RootState) => state.devices);
   const { selectedDeviceId } = useSelector((state: RootState) => state.telemetry);
 
-  const [summaryData, setSummaryData] = useState<any>(null);
+  interface AISummary {
+    type: 'Emergency' | 'Daily' | 'Baseline';
+    message: string;
+    anomaly?: string;
+    timestamp?: string;
+  }
+
+  const [summaryData, setSummaryData] = useState<AISummary | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Fetch the pre-computed Cron / Emergency data instantly from the backend

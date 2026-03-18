@@ -56,7 +56,7 @@ const TelemetryViewer: React.FC = () => {
             ].map(opt => (
               <button
                 key={opt.value}
-                onClick={() => dispatch(setDateRange(opt.value as any))}
+                onClick={() => dispatch(setDateRange(opt.value as '24h' | '7d' | '30d'))}
                 className={`flex-1 flex items-center justify-center space-x-1 py-2 text-sm font-medium rounded-md transition-all ${dateRange === opt.value ? 'bg-white dark:bg-gray-800 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
                 <Clock className="w-4 h-4" />

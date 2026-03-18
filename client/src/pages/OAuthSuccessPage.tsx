@@ -14,12 +14,9 @@ const OAuthSuccessPage = () => {
     const refreshToken = searchParams.get('refreshToken');
 
     if (accessToken && refreshToken) {
-      // Store tokens
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
-      // We don't have user info from URL, so we store placeholder or decode JWT
-      // Wait for next reload or hit /me endpoint if it existed
       dispatch(
         setCredentials({
           user: { id: 'oauth_user', name: 'Google User', email: '', role: 'user' },
@@ -27,11 +24,14 @@ const OAuthSuccessPage = () => {
         })
       );
       
-      // Redirect to dashboard
       navigate('/');
-    } else {
-      setError(true);
-      setTimeout(() => navigate('/login'), 3000);
+    } else if (!accessToken || !refreshToken) {
+      // Use set-timeout or similar to avoid synchronous setState in effect warning
+      const timer = setTimeout(() => {
+        setError(true);
+        setTimeout(() => navigate('/login'), 3000);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [searchParams, navigate, dispatch]);
 

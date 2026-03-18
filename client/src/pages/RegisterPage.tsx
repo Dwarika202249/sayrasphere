@@ -27,9 +27,10 @@ const RegisterPage = () => {
 
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken }));
       navigate('/');
-    } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.error) {
-        setError(err.response.data.error.message);
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'response' in err) {
+        const errorResponse = err as { response: { data?: { error?: { message: string } } } };
+        setError(errorResponse.response.data?.error?.message || 'Failed to register. Please try again.');
       } else {
         setError('Failed to register. Please try again.');
       }

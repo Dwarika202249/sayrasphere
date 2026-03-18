@@ -57,8 +57,9 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device }) => {
     try {
       await dispatch(sendCommandAction({ deviceId: device._id, action: 'toggle', value: checked })).unwrap();
       toast.success(`${device.name} turned ${checked ? 'ON' : 'OFF'}`);
-    } catch (error: any) {
-      toast.error(`Failed to flip ${device.name}: ${error}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to flip ${device.name}: ${message}`);
       // Revert optimistic update on failure by dispatching original reality
       dispatch(optimisticCommandUpdate({ deviceId: device._id, action: 'toggle', value: !checked }));
     } finally {
@@ -92,14 +93,14 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device }) => {
               {device.name}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-              {device.metadata?.location || 'Unknown Location'}
+              {String(device.metadata?.location || 'Unknown Location')}
             </p>
           </div>
           {device.type === 'switch' && (
             <div className="flex items-center space-x-2">
                {isCommandPending && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
                <Switch 
-                 checked={device.currentValue?.state || false}
+                 checked={!!(device.currentValue?.state as boolean)}
                  onCheckedChange={handleToggle}
                  disabled={isCommandPending}
                />

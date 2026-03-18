@@ -8,12 +8,12 @@ export interface AutomationRule {
     deviceId: { _id: string, name: string, type: string };
     metric: string;
     operator: string;
-    value: any;
+    value: unknown;
   };
   action: {
     deviceId: { _id: string, name: string, type: string };
     command: string;
-    value: any;
+    value: unknown;
   };
   enabled: boolean;
   createdAt: string;
@@ -39,7 +39,7 @@ export const fetchRules = createAsyncThunk('rules/fetchRules', async () => {
 
 export const createRuleAction = createAsyncThunk(
   'rules/createRule',
-  async (ruleData: any) => {
+  async (ruleData: Omit<AutomationRule, '_id' | 'createdAt'>) => {
     const response = await api.post('/rules', ruleData);
     return response.data;
   }

@@ -9,7 +9,7 @@ interface TimeSeriesChartProps {
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({ data }) => {
   // Transform data for recharts
   const chartData = data.map(item => {
-    const formattedData: any = {
+    const formattedData: Record<string, unknown> = {
       time: new Date(item.timestamp).toLocaleString(),
       ...item.metrics
     };
