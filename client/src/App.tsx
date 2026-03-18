@@ -10,6 +10,7 @@ import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AutomationPage from './pages/AutomationPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import Layout from './components/layout/Layout';
 
 function App() {
   const dispatch = useDispatch();
@@ -43,10 +44,11 @@ function App() {
         <Route path="/oauth-success" element={<OAuthSuccessPage />} />
         
         <Route element={<ProtectedRoute />}>
-          {/* Dashboard is wrapped inside ProtectedRoute */}
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/automation" element={<AutomationPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/automation" element={<AutomationPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

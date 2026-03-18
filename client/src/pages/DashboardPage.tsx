@@ -1,15 +1,12 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../app/store';
-import { logout } from '../features/auth/authSlice';
 import { fetchDevices } from '../features/devices/devicesSlice';
 import { useSocket } from '../hooks/useSocket';
 import DeviceGrid from '../components/dashboard/DeviceGrid';
 
 const DashboardPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const { items: devices, loading, error } = useSelector((state: RootState) => state.devices);
 
@@ -24,32 +21,12 @@ const DashboardPage = () => {
   const onlineDevices = devices.filter(d => d.status === 'online').length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm">
+        <header className="flex justify-between items-center bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500">Welcome back, {user?.name}</p>
-          </div>
-          <div className="flex space-x-3">
-             <button
-               onClick={() => navigate('/analytics')}
-               className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-md hover:bg-emerald-100 font-medium transition-colors"
-             >
-               Analytics
-             </button>
-             <button
-               onClick={() => navigate('/automation')}
-               className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 font-medium transition-colors"
-             >
-               Automations
-             </button>
-             <button
-               onClick={() => dispatch(logout())}
-               className="px-4 py-2 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 font-medium transition-colors"
-             >
-               Log out
-             </button>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-gray-500 dark:text-gray-400">Welcome back, {user?.name}</p>
           </div>
         </header>
 
