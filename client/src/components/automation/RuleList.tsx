@@ -27,7 +27,7 @@ const RuleList: React.FC<RuleListProps> = ({ rules }) => {
     try {
       await dispatch(deleteRuleAction(ruleId)).unwrap();
       toast.success("Rule Deleted");
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete rule");
     }
   }
