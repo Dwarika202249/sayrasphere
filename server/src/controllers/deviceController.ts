@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Device } from '../models/Device';
+import { getMQTTClient } from '../mqtt/mqttClient';
 
 // @desc    Get all devices
 // @route   GET /api/devices
@@ -28,5 +29,31 @@ export const getDeviceById = async (req: Request, res: Response): Promise<void> 
     res.status(200).json(device);
   } catch (error) {
     res.status(500).json({ error: { message: 'Server error retrieving device', status: 500 } });
+  }
+};
+
+// @desc    Toggle Simulation for user devices
+// @route   POST /api/devices/simulate
+// @access  Private (Admin/Test User)
+export const toggleSimulation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { action } = req.body; // 'START' or 'STOP'
+    const mqttClient = getMQTTClient();
+
+    if (action === 'START') {
+      const devices = await Device.find();
+      const deviceMetadata = devices.map(d => ({ id: d._id, type: d.type }));
+      
+      mqttClient.publish('sayrasphere/system/simulate', JSON.stringify({ 
+        action: 'START', 
+        devices: deviceMetadata 
+      }));
+      res.status(200).json({ message: 'Simulation started' });
+    } else {
+      mqttClient.publish('sayrasphere/system/simulate', JSON.stringify({ action: 'STOP' }));
+      res.status(200).json({ message: 'Simulation stopped' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: { message: 'Failed to toggle simulation', status: 500 } });
   }
 };

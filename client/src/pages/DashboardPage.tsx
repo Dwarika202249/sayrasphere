@@ -6,6 +6,7 @@ import { useSocket } from '../hooks/useSocket';
 import DeviceGrid from '../components/dashboard/DeviceGrid';
 import DeviceHealthCard from '../components/dashboard/DeviceHealthCard';
 import AISummaryCard from '../components/ai/AISummaryCard';
+import SimulationToggle from '../components/dashboard/SimulationToggle';
 
 const DashboardPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,10 +26,13 @@ const DashboardPage = () => {
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+        <header className="flex justify-between items-start sm:items-center bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
             <p className="text-gray-500 dark:text-gray-400">Welcome back, {user?.name}</p>
+          </div>
+          <div className="shrink-0">
+            <SimulationToggle />
           </div>
         </header>
 

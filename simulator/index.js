@@ -1,64 +1,91 @@
 import mqtt from 'mqtt';
 
-// Uses Eclipse Mosquitto instance running on Local Docker
+// Uses HiveMQ Cloud or Local Mosquitto
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
-const client = mqtt.connect(MQTT_BROKER);
+const client = mqtt.connect(MQTT_BROKER, {
+  username: process.env.MQTT_USER,
+  password: process.env.MQTT_PASS,
+});
 
-const MOCK_DEVICES = [
-  { id: '65f0123abc456ef7890def12', name: 'Living Room Temp', type: 'sensor' },
-  { id: '65f0123abc456ef7890def34', name: 'Bedroom AC', type: 'switch' }
-];
+let simulationInterval = null;
+let activeDevices = [];
+
+const startSimulation = (devices) => {
+  if (simulationInterval) clearInterval(simulationInterval);
+  activeDevices = devices;
+  console.log(`[SIM] Starting simulation for ${devices.length} devices...`);
+
+  simulationInterval = setInterval(() => {
+    activeDevices.forEach(device => {
+      if (device.type === 'sensor' || device.type === 'thermostat') {
+        const topic = `sayrasphere/devices/${device.id}/telemetry`;
+        const payload = {
+          temperature: +(Math.random() * (26 - 20) + 20).toFixed(1),
+          humidity: +(Math.random() * (60 - 40) + 40).toFixed(0),
+          timestamp: new Date().toISOString()
+        };
+        client.publish(topic, JSON.stringify(payload));
+      } else if (device.type === 'switch' || device.type === 'bulb') {
+        // Randomly flip status occasionally to show activity
+        if (Math.random() > 0.8) {
+          const topic = `sayrasphere/devices/${device.id}/status`;
+          client.publish(topic, JSON.stringify({ status: Math.random() > 0.5 ? 'online' : 'offline' }));
+        }
+      }
+    });
+  }, 5000);
+};
+
+const stopSimulation = () => {
+  if (simulationInterval) {
+    clearInterval(simulationInterval);
+    simulationInterval = null;
+    activeDevices = [];
+    console.log('[SIM] Simulation stopped.');
+  }
+};
 
 client.on('connect', () => {
-  console.log(`Simulator connected to ${MQTT_BROKER}!`);
-
-  // Subscribe to command topics for all devices
+  console.log(`Simulator connected to ${MQTT_BROKER}! Waiting for commands...`);
+  
+  // Listen for system control messages
+  client.subscribe('sayrasphere/system/simulate');
+  
+  // Still listen for commands to handle ACKs
   client.subscribe('sayrasphere/devices/+/command');
-
-  setInterval(() => {
-    // 1. Simulate Temp Sensor
-    const tempSensor = MOCK_DEVICES[0];
-    const telemetryTopic = `sayrasphere/devices/${tempSensor.id}/telemetry`;
-    const tempPayload = {
-      temperature: +(Math.random() * (26 - 20) + 20).toFixed(1), // 20.0 to 26.0
-      humidity: +(Math.random() * (60 - 40) + 40).toFixed(0),    // 40% to 60%
-    };
-    client.publish(telemetryTopic, JSON.stringify(tempPayload));
-    console.log(`[PUB] ${tempSensor.name} -> ${JSON.stringify(tempPayload)}`);
-
-    // 2. Simulate Random AC State
-    const ac = MOCK_DEVICES[1];
-    const statusTopic = `sayrasphere/devices/${ac.id}/status`;
-    const isOnline = Math.random() > 0.5 ? 'online' : 'offline';
-    client.publish(statusTopic, JSON.stringify({ status: isOnline }));
-    
-  }, 4000); // Push updates every 4 seconds
 });
 
 client.on('message', (topic, message) => {
+  const payload = JSON.parse(message.toString());
+
+  // 1. Handle System Simulation Controls
+  if (topic === 'sayrasphere/system/simulate') {
+    if (payload.action === 'START') {
+      startSimulation(payload.devices || []);
+    } else if (payload.action === 'STOP') {
+      stopSimulation();
+    }
+    return;
+  }
+
+  // 2. Handle Device Commands (ACK logic)
   if (topic.endsWith('/command')) {
-    const topicParts = topic.split('/');
-    const deviceId = topicParts[2];
-    const payload = JSON.parse(message.toString());
+    const deviceId = topic.split('/')[2];
+    console.log(`[RCVD CMD] Device ${deviceId}: ${payload.action}`);
 
-    console.log(`[RCVD CMD] Device ${deviceId}: ${payload.action} -> ${payload.value}`);
-
-    // Pre-suppose the hardware needs 500ms to physically actuate
     setTimeout(() => {
-      // 1. Send the ACK back to verify completion
-      const ackTopic = `sayrasphere/devices/${deviceId}/ack`;
-      client.publish(ackTopic, JSON.stringify({ commandId: payload.commandId, status: 'completed' }));
-      console.log(`[PUB ACK]  Device ${deviceId} finished command ${payload.commandId}`);
-
-      // 2. Publish new status to reflect state change immediately
+      client.publish(`sayrasphere/devices/${deviceId}/ack`, JSON.stringify({ 
+        commandId: payload.commandId, 
+        status: 'completed' 
+      }));
+      
       if (payload.action === 'toggle') {
-        const statusTopic = `sayrasphere/devices/${deviceId}/status`;
-        client.publish(statusTopic, JSON.stringify({ status: payload.value ? 'online' : 'offline' }));
+        client.publish(`sayrasphere/devices/${deviceId}/status`, JSON.stringify({ 
+          status: payload.value ? 'online' : 'offline' 
+        }));
       }
     }, 500);
   }
 });
 
-client.on('error', (err) => {
-  console.error('Simulator MQTT Error:', err);
-});
+client.on('error', (err) => console.error('Simulator Error:', err));
