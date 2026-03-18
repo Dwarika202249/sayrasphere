@@ -23,7 +23,7 @@ const SimulationToggle = () => {
       await api.post('/devices/simulate', { action });
       setIsSimulating(!isSimulating);
       toast.success(action === 'START' ? 'Cloud Simulation Started' : 'Cloud Simulation Stopped');
-    } catch (error) {
+    } catch {
       toast.error('Failed to toggle simulation');
     } finally {
       setLoading(false);
