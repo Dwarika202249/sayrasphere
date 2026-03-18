@@ -5,11 +5,17 @@ export interface IDevice extends Document {
   type: 'sensor' | 'actuator' | 'switch' | 'camera' | 'other';
   status: 'online' | 'offline';
   lastPing: Date;
+  lastSeen: Date;
+  uptimeSince: Date;
   metadata: {
     firmwareVersion?: string;
     location?: string;
     macAddress?: string;
     ipAddress?: string;
+  };
+  location?: {
+    lat: number;
+    lng: number;
   };
   currentValue?: any;
 }
@@ -35,11 +41,23 @@ const DeviceSchema: Schema = new Schema(
       type: Date,
       default: Date.now,
     },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
+    uptimeSince: {
+      type: Date,
+      default: Date.now,
+    },
     metadata: {
       firmwareVersion: { type: String },
       location: { type: String },
       macAddress: { type: String },
       ipAddress: { type: String },
+    },
+    location: {
+      lat: { type: Number },
+      lng: { type: Number },
     },
     currentValue: {
       type: Schema.Types.Mixed,

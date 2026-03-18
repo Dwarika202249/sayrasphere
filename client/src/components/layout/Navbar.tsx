@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppDispatch } from '../../app/store';
 import { logout } from '../../features/auth/authSlice';
-import { Moon, Sun, Menu, X, LayoutDashboard, Zap, LineChart, LogOut, Home } from 'lucide-react';
+import { Moon, Sun, Menu, X, LayoutDashboard, Zap, LineChart, MapPin, LogOut, Home } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -15,6 +15,7 @@ const Navbar: React.FC = () => {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Automations', path: '/automation', icon: Zap },
     { name: 'Analytics', path: '/analytics', icon: LineChart },
+    { name: 'Map', path: '/map', icon: MapPin },
   ];
 
   const handleLogout = () => {

@@ -4,6 +4,7 @@ import type { RootState, AppDispatch } from '../app/store';
 import { fetchDevices } from '../features/devices/devicesSlice';
 import { useSocket } from '../hooks/useSocket';
 import DeviceGrid from '../components/dashboard/DeviceGrid';
+import DeviceHealthCard from '../components/dashboard/DeviceHealthCard';
 import AISummaryCard from '../components/ai/AISummaryCard';
 
 const DashboardPage = () => {
@@ -50,6 +51,17 @@ const DashboardPage = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Devices</h2>
           <DeviceGrid devices={devices} loading={loading} error={error} />
         </div>
+
+        {devices.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mt-4 mb-4 text-gray-800 dark:text-gray-100">System Health</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {devices.map(device => (
+                  <DeviceHealthCard key={device._id} device={device} />
+               ))}
+            </div>
+          </div>
+        )}
 
         {devices.length > 0 && (
           <div>

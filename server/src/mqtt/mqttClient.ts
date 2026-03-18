@@ -35,7 +35,8 @@ export const connectMQTT = (io: SocketIOServer) => {
           deviceId,
           { 
             currentValue: payload,
-            lastPing: new Date()
+            lastPing: new Date(),
+            lastSeen: new Date()
           },
           { returnDocument: 'after' }
         );
@@ -58,12 +59,21 @@ export const connectMQTT = (io: SocketIOServer) => {
 
       } 
       else if (messageType === 'status') {
+        // First check if device is transitioning from offline -> online
+        const existingDevice = await Device.findById(deviceId);
+        const updateFields: any = { 
+          status: payload.status,
+          lastPing: new Date(),
+          lastSeen: new Date()
+        };
+        // Track when device came online for uptime calculation
+        if (existingDevice?.status === 'offline' && payload.status === 'online') {
+          updateFields.uptimeSince = new Date();
+        }
+
         updatedDevice = await Device.findByIdAndUpdate(
           deviceId,
-          { 
-            status: payload.status,
-            lastPing: new Date()
-          },
+          updateFields,
           { returnDocument: 'after' }
         );
 

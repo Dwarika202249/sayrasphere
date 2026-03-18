@@ -11,7 +11,13 @@ export interface Device {
   type: string;
   status: "online" | "offline";
   lastPing: string;
+  lastSeen?: string;
+  uptimeSince?: string;
   metadata?: any;
+  location?: {
+    lat: number;
+    lng: number;
+  };
   currentValue?: any;
 }
 

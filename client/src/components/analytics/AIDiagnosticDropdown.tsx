@@ -60,7 +60,7 @@ const AIDiagnosticDropdown: React.FC = () => {
           onChange={(e) => dispatch(setSelectedDevice(e.target.value))}
           className="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm md:text-base px-3 md:px-4 py-3 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
         >
-          <option value="" disabled>Select a target system to sync Telemetry & AI...</option>
+          <option value="" disabled>Select system to sync Telemetry & AI</option>
           {devices.map(d => <option key={d._id} value={d._id}>{d.name} ({d.type})</option>)}
         </select>
 

@@ -3,6 +3,8 @@ import { Command } from '../models/Command';
 import { getMQTTClient } from '../mqtt/mqttClient';
 import { generateDeviceSummary, detectAnomalies } from './aiService';
 import { DeviceSummary } from '../models/DeviceSummary';
+import { Device } from '../models/Device';
+import { getIO } from '../socket/socketServer';
 
 class AutomationEngine {
   private activeRules: IAutomationRule[] = [];
@@ -54,6 +56,20 @@ class AutomationEngine {
       if (conditionMet) {
         console.log(`[Automation] Rule "${rule.name}" Triggered!`);
         await this.executeAction(rule);
+
+        // Phase 6: Emit Socket.IO emergency alert to connected clients
+        try {
+          const device = await Device.findById(rule.trigger.deviceId);
+          const io = getIO();
+          io.emit('emergency-alert', {
+            deviceName: device?.name || 'Unknown Device',
+            ruleName: rule.name,
+            message: `${rule.trigger.metric} ${rule.trigger.operator} ${rule.trigger.value}`
+          });
+        } catch (err) {
+          // Non-critical — don't crash the automation loop
+          console.error('[Automation] Failed to emit socket alert:', err);
+        }
       }
     }
   }

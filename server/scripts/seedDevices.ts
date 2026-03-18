@@ -13,6 +13,7 @@ const mockDevices = [
     type: 'sensor',
     status: 'online',
     metadata: { location: 'Living Room', firmwareVersion: 'v1.0.4' },
+    location: { lat: 28.6315, lng: 77.2167 },
     currentValue: { temperature: 22.5, humidity: 45 },
   },
   {
@@ -20,6 +21,7 @@ const mockDevices = [
     type: 'switch',
     status: 'offline',
     metadata: { location: 'Kitchen', ipAddress: '192.168.1.105' },
+    location: { lat: 28.6325, lng: 77.2190 },
     currentValue: { state: false, brightness: 0 },
   },
   {
@@ -27,6 +29,7 @@ const mockDevices = [
     type: 'actuator',
     status: 'online',
     metadata: { location: 'Garage' },
+    location: { lat: 28.6300, lng: 77.2145 },
     currentValue: { state: 'closed' },
   },
   {
@@ -34,6 +37,7 @@ const mockDevices = [
     type: 'camera',
     status: 'online',
     metadata: { location: 'Front Porch', ipAddress: '192.168.1.110' },
+    location: { lat: 28.6340, lng: 77.2210 },
     currentValue: { motionDetected: false },
   },
   {
@@ -42,6 +46,7 @@ const mockDevices = [
     type: 'switch',
     status: 'online',
     metadata: { location: 'Master Bedroom' },
+    location: { lat: 28.6310, lng: 77.2230 },
     currentValue: { state: true, targetTemp: 21 },
   },
 ];

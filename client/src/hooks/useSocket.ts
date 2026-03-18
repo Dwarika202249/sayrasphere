@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useDispatch } from 'react-redux';
 import { updateDeviceTelemetry, updateDeviceStatus } from '../features/devices/devicesSlice';
+import { requestNotificationPermission, showEmergencyNotification } from '../services/notificationService';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -29,6 +30,17 @@ export const useSocket = () => {
     socket.on('device:status', (data: { id: string; status: 'online' | 'offline'; lastPing: string }) => {
       dispatch(updateDeviceStatus(data));
     });
+
+    // Phase 6: Listen for emergency automation alerts
+    socket.on('emergency-alert', (data: { deviceName: string; ruleName: string; message: string }) => {
+      showEmergencyNotification(
+        `⚠️ ${data.deviceName} — Alert`,
+        `Rule "${data.ruleName}" triggered: ${data.message}`
+      );
+    });
+
+    // Request notification permission on first connect
+    requestNotificationPermission();
 
     socket.on('disconnect', () => {
       console.log('Disconnected from WebSocket server');

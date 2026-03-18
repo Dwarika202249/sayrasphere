@@ -10,6 +10,7 @@ import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AutomationPage from './pages/AutomationPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import MapViewPage from './pages/MapViewPage';
 import Layout from './components/layout/Layout';
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/automation" element={<AutomationPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/map" element={<MapViewPage />} />
           </Route>
         </Route>
 
