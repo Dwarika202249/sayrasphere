@@ -12,8 +12,9 @@ const SimulationToggle = () => {
   const { isSimulating } = useSelector((state: RootState) => state.devices);
   const [loading, setLoading] = useState(false);
 
-  // Only show for admins or test user
-  const isAllowed = user?.email === 'test@sayrasphere.com' || user?.email?.includes('admin');
+  // Only show for admins or demo user
+  const demoEmail = import.meta.env.VITE_DEMO_USER || 'test@sayrasphere.com';
+  const isAllowed = user?.email === demoEmail || user?.email?.includes('admin');
 
   if (!isAllowed) return null;
 

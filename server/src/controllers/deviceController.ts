@@ -50,8 +50,9 @@ export const toggleSimulation = async (req: AuthRequest, res: Response): Promise
     const userId = req.user?.id;
     const userEmail = req.user?.email;
 
-    // SHOWCASE MODE LOGIC for test user
-    if (userEmail === 'test@sayrasphere.com') {
+    // SHOWCASE MODE LOGIC for demo user
+    const demoUser = process.env.DEMO_USER || 'test@sayrasphere.com';
+    if (userEmail === demoUser) {
       if (action === 'START') {
         // 1. Clean up old devices for this user
         await Device.deleteMany({ userId });
