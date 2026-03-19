@@ -19,12 +19,26 @@ export const connectMQTT = (io: SocketIOServer) => {
   });
 
   mqttClient.on('connect', () => {
-    console.log(`Connected to MQTT Broker at ${MQTT_BROKER}`);
+    console.log(`[MQTT] Successfully connected to broker: ${MQTT_BROKER}`);
 
     // Subscribe to all device telemetry and status changes
-    mqttClient.subscribe('sayrasphere/devices/+/telemetry');
-    mqttClient.subscribe('sayrasphere/devices/+/status');
-    mqttClient.subscribe('sayrasphere/devices/+/ack');
+    mqttClient.subscribe('sayrasphere/devices/+/telemetry', (err) => {
+        if (err) console.error('[MQTT] Subscription error (telemetry):', err);
+    });
+    mqttClient.subscribe('sayrasphere/devices/+/status', (err) => {
+        if (err) console.error('[MQTT] Subscription error (status):', err);
+    });
+    mqttClient.subscribe('sayrasphere/devices/+/ack', (err) => {
+        if (err) console.error('[MQTT] Subscription error (ack):', err);
+    });
+  });
+
+  mqttClient.on('reconnect', () => {
+    console.log('[MQTT] Attempting to reconnect...');
+  });
+
+  mqttClient.on('offline', () => {
+    console.warn('[MQTT] Client is offline.');
   });
 
   mqttClient.on('message', async (topic: string, message: Buffer) => {

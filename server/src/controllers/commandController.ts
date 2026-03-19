@@ -37,6 +37,14 @@ export const sendCommand = async (req: AuthRequest, res: Response): Promise<void
 
     // 2. Dispatch via MQTT
     const mqttClient = getMQTTClient();
+    
+    // Safety Check: If MQTT is not connected, fail early instead of hanging
+    if (!mqttClient.connected) {
+        console.error('MQTT Client not connected. Command buffered or failed.');
+        res.status(503).json({ error: { message: 'MQTT Broker unreachable. Please try again later.', status: 503 } });
+        return;
+    }
+
     const topic = `sayrasphere/devices/${deviceId}/command`;
     
     // Pass the command ID so the simulator can ACK it specifically
@@ -46,20 +54,20 @@ export const sendCommand = async (req: AuthRequest, res: Response): Promise<void
       value
     });
 
+    // Publish with QoS 1, but don't block the HTTP response on the PUBACK
+    // The simulator will send an ACK message later that we handle via WebSockets
     mqttClient.publish(topic, payload, { qos: 1 }, (err) => {
       if (err) {
         console.error('MQTT Publish Error:', err);
         command.status = 'failed';
         command.save();
-        res.status(500).json({ error: { message: 'Failed to dispatch command to broker', status: 500 } });
-        return;
       }
+    });
 
-      // Successly dispatched
-      res.status(202).json({
-        message: 'Command dispatched',
+    // Successly dispatched (Accepted)
+    res.status(202).json({
+        message: 'Command dispatched to broker',
         command
-      });
     });
 
   } catch (error) {
