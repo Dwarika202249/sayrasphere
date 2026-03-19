@@ -56,13 +56,13 @@ export const toggleSimulation = async (req: AuthRequest, res: Response): Promise
         // 1. Clean up old devices for this user
         await Device.deleteMany({ userId });
 
-        // 2. Seed fresh mock devices with location data for the map
+        // 2. Seed fresh mock devices with location data and initial values
         const mockDevices = [
-          { userId, name: 'Living Room Temp', type: 'sensor', status: 'online', location: { lat: 28.6139, lng: 77.2090 } },
-          { userId, name: 'Bedroom AC', type: 'switch', status: 'online', location: { lat: 28.6150, lng: 77.2100 } },
-          { userId, name: 'Kitchen Smoke', type: 'sensor', status: 'online', location: { lat: 28.6120, lng: 77.2115 } },
-          { userId, name: 'Garage Door', type: 'switch', status: 'offline', location: { lat: 28.6145, lng: 77.2130 } },
-          { userId, name: 'Backyard Light', type: 'switch', status: 'online', location: { lat: 28.6110, lng: 77.2085 } }
+          { userId, name: 'Living Room Temp', type: 'sensor', status: 'online', location: { lat: 28.6139, lng: 77.2090 }, currentValue: { temperature: 24.5, humidity: 45 } },
+          { userId, name: 'Bedroom AC', type: 'switch', status: 'online', location: { lat: 28.6150, lng: 77.2100 }, currentValue: { state: true } },
+          { userId, name: 'Kitchen Smoke', type: 'sensor', status: 'online', location: { lat: 28.6120, lng: 77.2115 }, currentValue: { co_level: 0, battery: 98 } },
+          { userId, name: 'Garage Door', type: 'switch', status: 'offline', location: { lat: 28.6145, lng: 77.2130 }, currentValue: { state: false } },
+          { userId, name: 'Backyard Light', type: 'switch', status: 'online', location: { lat: 28.6110, lng: 77.2085 }, currentValue: { state: true } }
         ];
         
         const createdDevices = await Device.insertMany(mockDevices);

@@ -109,9 +109,13 @@ const devicesSlice = createSlice({
       if (index !== -1) {
         if (action.payload.action === "toggle") {
           const device = state.items[index];
-          if (device.currentValue) {
-            device.currentValue.state = action.payload.value;
+          // Ensure currentValue exists
+          if (!device.currentValue) {
+            device.currentValue = {};
           }
+          device.currentValue.state = action.payload.value;
+          
+          // Also update status to reflect the toggle if applicable
           state.items[index].status = action.payload.value
             ? "online"
             : "offline";

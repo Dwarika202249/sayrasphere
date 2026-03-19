@@ -4,7 +4,7 @@ import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-router.post('/', protect as any, sendCommand);
-router.get('/device/:deviceId', protect as any, getCommandHistory);
+router.post('/', protect as any, sendCommand as any);
+router.get('/device/:deviceId', protect as any, getCommandHistory as any);
 
 export default router;
