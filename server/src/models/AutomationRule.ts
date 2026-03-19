@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IAutomationRule extends Document {
+  userId: mongoose.Types.ObjectId;
   name: string;
   trigger: {
     deviceId: mongoose.Types.ObjectId;
@@ -20,6 +21,11 @@ export interface IAutomationRule extends Document {
 
 const AutomationRuleSchema: Schema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     name: { type: String, required: true },
     trigger: {
       deviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Device', required: true },

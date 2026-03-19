@@ -23,12 +23,14 @@ export interface Device {
 
 interface DevicesState {
   items: Device[];
+  isSimulating: boolean;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: DevicesState = {
   items: [],
+  isSimulating: false,
   loading: false,
   error: null,
 };
@@ -116,6 +118,9 @@ const devicesSlice = createSlice({
         }
       }
     },
+    setSimulating: (state, action: PayloadAction<boolean>) => {
+      state.isSimulating = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -126,6 +131,14 @@ const devicesSlice = createSlice({
       .addCase(fetchDevices.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
+        
+        // Intelligently set isSimulating based on device presence
+        // If there are devices, we assume simulation is active (especially for the showcase user)
+        if (action.payload.length > 0) {
+          state.isSimulating = true;
+        } else {
+          state.isSimulating = false;
+        }
       })
       .addCase(fetchDevices.rejected, (state, action) => {
         state.loading = false;
@@ -138,6 +151,7 @@ export const {
   updateDeviceTelemetry,
   updateDeviceStatus,
   optimisticCommandUpdate,
+  setSimulating,
 } = devicesSlice.actions;
 
 export default devicesSlice.reducer;

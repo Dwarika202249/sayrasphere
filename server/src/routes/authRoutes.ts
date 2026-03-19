@@ -6,12 +6,15 @@ import {
   loginUser,
   refreshToken,
   logoutUser,
+  getMe,
 } from "../controllers/authController";
+import { protect } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.get("/me", protect as any, getMe);
 router.post("/refresh", refreshToken);
 router.post("/logout", logoutUser);
 

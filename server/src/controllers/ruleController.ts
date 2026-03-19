@@ -2,13 +2,20 @@ import { Request, Response } from 'express';
 import { AutomationRule } from '../models/AutomationRule';
 import { automationEngine } from '../services/automationEngine';
 
-// @desc    Get all automation rules
+// Extend Request to include user
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+}
+
+// @desc    Get all automation rules for current user
 // @route   GET /api/rules
 // @access  Private
-export const getRules = async (req: Request, res: Response) => {
+export const getRules = async (req: AuthRequest, res: Response) => {
   try {
-    // In a multi-tenant app, we would filter by req.user.id
-    const rules = await AutomationRule.find()
+    const rules = await AutomationRule.find({ userId: req.user?.id })
       .populate('trigger.deviceId', 'name type')
       .populate('action.deviceId', 'name type');
     
@@ -21,11 +28,12 @@ export const getRules = async (req: Request, res: Response) => {
 // @desc    Create a new automation rule
 // @route   POST /api/rules
 // @access  Private
-export const createRule = async (req: Request, res: Response) => {
+export const createRule = async (req: AuthRequest, res: Response) => {
   try {
     const { name, trigger, action, enabled } = req.body;
     
     const rule = await AutomationRule.create({
+      userId: req.user?.id,
       name,
       trigger,
       action,
@@ -44,9 +52,9 @@ export const createRule = async (req: Request, res: Response) => {
 // @desc    Toggle rule enablement
 // @route   PATCH /api/rules/:id/toggle
 // @access  Private
-export const toggleRule = async (req: Request, res: Response): Promise<void> => {
+export const toggleRule = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const rule = await AutomationRule.findById(req.params.id);
+    const rule = await AutomationRule.findOne({ _id: req.params.id, userId: req.user?.id });
     if (!rule) {
       res.status(404).json({ error: { message: 'Rule not found' } });
       return;
@@ -67,9 +75,9 @@ export const toggleRule = async (req: Request, res: Response): Promise<void> => 
 // @desc    Delete a rule
 // @route   DELETE /api/rules/:id
 // @access  Private
-export const deleteRule = async (req: Request, res: Response): Promise<void> => {
+export const deleteRule = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const rule = await AutomationRule.findByIdAndDelete(req.params.id);
+        const rule = await AutomationRule.findOneAndDelete({ _id: req.params.id, userId: req.user?.id });
         if(!rule) {
              res.status(404).json({ error: { message: 'Rule not found' }});
              return;

@@ -135,3 +135,21 @@ export const logoutUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: { message: 'Server error', status: 500 } });
   }
 };
+
+export const getMe = async (req: any, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user?.id);
+    if (!user) {
+      res.status(404).json({ error: { message: 'User not found', status: 404 } });
+      return;
+    }
+    res.status(200).json({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+    });
+  } catch (error) {
+    res.status(500).json({ error: { message: 'Server error', status: 500 } });
+  }
+};

@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../app/store';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from '../../app/store';
+import { fetchDevices, setSimulating } from '../../features/devices/devicesSlice';
 import { Play, Square, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 const SimulationToggle = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const { isSimulating } = useSelector((state: RootState) => state.devices);
   const [loading, setLoading] = useState(false);
 
   // Only show for admins or test user
@@ -21,7 +23,13 @@ const SimulationToggle = () => {
     
     try {
       await api.post('/devices/simulate', { action });
-      setIsSimulating(!isSimulating);
+      
+      // Update global simulation state
+      dispatch(setSimulating(!isSimulating));
+      
+      // Refresh devices after simulation state change
+      dispatch(fetchDevices());
+      
       toast.success(action === 'START' ? 'Cloud Simulation Started' : 'Cloud Simulation Stopped');
     } catch {
       toast.error('Failed to toggle simulation');

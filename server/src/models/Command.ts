@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ICommand extends Document {
+  userId: mongoose.Types.ObjectId;
   deviceId: mongoose.Types.ObjectId;
   action: string;
   value: any;
@@ -10,6 +11,11 @@ export interface ICommand extends Document {
 
 const CommandSchema: Schema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     deviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Device',

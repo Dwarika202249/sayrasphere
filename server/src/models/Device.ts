@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IDevice extends Document {
+  userId: mongoose.Types.ObjectId;
   name: string;
   type: 'sensor' | 'actuator' | 'switch' | 'camera' | 'other';
   status: 'online' | 'offline';
@@ -22,6 +23,11 @@ export interface IDevice extends Document {
 
 const DeviceSchema: Schema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     name: {
       type: String,
       required: true,

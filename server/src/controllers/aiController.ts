@@ -4,13 +4,21 @@ import { Device } from '../models/Device';
 import { DeviceSummary } from '../models/DeviceSummary';
 
 // Phase 5.5: Retrieve the latest Cron / Emergency backup instead of querying LLM live
-export const getLatestSummary = async (req: Request, res: Response): Promise<void> => {
+export const getLatestSummary = async (req: any, res: Response): Promise<void> => {
   try {
     const deviceId = req.params.deviceId as string;
     if (!deviceId) {
       res.status(400).json({ error: { message: 'Device ID is required' } });
       return;
     }
+
+    // Verify ownership
+    const device = await Device.findOne({ _id: deviceId, userId: req.user?.id });
+    if (!device) {
+       res.status(404).json({ error: { message: 'Device not found or access denied' }});
+       return;
+    }
+
     // Find the newest summary
     const cached = await DeviceSummary.findOne({ deviceId }).sort({ createdAt: -1 }).lean();
     if (cached) {
@@ -25,13 +33,21 @@ export const getLatestSummary = async (req: Request, res: Response): Promise<voi
 };
 
 // Original Live Generator (Now utilized explicitly as a "Force Refresh")
-export const forceRefreshSummary = async (req: Request, res: Response): Promise<void> => {
+export const forceRefreshSummary = async (req: any, res: Response): Promise<void> => {
   try {
     const deviceId = req.params.deviceId as string;
     if (!deviceId) {
       res.status(400).json({ error: { message: 'Device ID is required' } });
       return;
     }
+
+    // Verify ownership
+    const device = await Device.findOne({ _id: deviceId, userId: req.user?.id });
+    if (!device) {
+       res.status(404).json({ error: { message: 'Device not found or access denied' }});
+       return;
+    }
+
     const [summary, anomaly] = await Promise.all([
       generateDeviceSummary(deviceId),
       detectAnomalies(deviceId)
@@ -52,13 +68,12 @@ export const forceRefreshSummary = async (req: Request, res: Response): Promise<
   }
 };
 
-export const processChatQuery = async (req: Request, res: Response): Promise<void> => {
+export const processChatQuery = async (req: any, res: Response): Promise<void> => {
   try {
     const { query } = req.body;
     
-    // Fetch global state to feed "Sayra"
-    // To protect tokens, we only send high-level context, not full telemetry
-    const allDevices = await Device.find().select('name type status currentValue').lean();
+    // Fetch user-specific state to feed "Sayra"
+    const allDevices = await Device.find({ userId: req.user?.id }).select('name type status currentValue').lean();
     
     const reply = await chatWithAssistant(query, allDevices);
     res.json({ reply });

@@ -15,10 +15,10 @@ export const getTelemetryData = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Ensure the device exists
-    const device = await Device.findById(deviceId);
+    // Ensure the device exists and belongs to the user
+    const device = await Device.findOne({ _id: deviceId, userId: (req as any).user?.id });
     if (!device) {
-       res.status(404).json({ error: { message: 'Device not found' }});
+       res.status(404).json({ error: { message: 'Device not found or access denied' }});
        return;
     }
 

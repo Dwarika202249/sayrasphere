@@ -79,6 +79,7 @@ class AutomationEngine {
     try {
       // 1. Log the automated command 
       const command = await Command.create({
+        userId: rule.userId,
         deviceId: rule.action.deviceId,
         action: rule.action.command,
         value: rule.action.value,
