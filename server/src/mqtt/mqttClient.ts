@@ -52,32 +52,47 @@ export const connectMQTT = (io: SocketIOServer) => {
       let updatedDevice;
       
       if (messageType === 'telemetry') {
-        updatedDevice = await Device.findByIdAndUpdate(
-          deviceId,
-          { 
-            currentValue: payload,
+        const cleanedDeviceId = deviceId.trim();
+        
+        // Construct atomic update object
+        const setObj: any = {
             lastPing: new Date(),
             lastSeen: new Date()
-          },
-          { returnDocument: 'after' }
+        };
+        
+        // Map payload to dot notation for atomic partial update
+        Object.keys(payload).forEach(key => {
+            setObj[`currentValue.${key}`] = payload[key];
+        });
+
+        // Use findOneAndUpdate for atomic operation and to get the full updated document
+        // This bypasses any instance-level tracking issues with Mixed types
+        const updatedDoc = await Device.findOneAndUpdate(
+            { _id: cleanedDeviceId },
+            { $set: setObj },
+            { new: true, runValidators: false }
         );
         
-        // Push update to React clients via Socket.IO
-        if (updatedDevice) {
-           io.emit('device:update', { id: deviceId, currentValue: payload, lastPing: updatedDevice.lastPing });
+        if (updatedDoc) {
+            // Send the FULL converged currentValue to frontend to avoid partial state issues
+            io.emit('device:update', { 
+                id: cleanedDeviceId, 
+                currentValue: updatedDoc.currentValue, 
+                lastPing: updatedDoc.lastPing 
+            });
+
+            // --- PHASE 4: Save Historical Telemetry to MongoDB ---
+            if (Object.keys(payload).length > 0) {
+               await Telemetry.create({
+                 deviceId: updatedDoc._id,
+                 metrics: payload
+               });
+            }
+
+            // --- PHASE 3: Fire new reading into the Automation Engine ---
+            automationEngine.evaluateTelemetry(cleanedDeviceId, payload);
         }
-
-        // --- PHASE 4: Save Historical Telemetry to MongoDB ---
-        if (Object.keys(payload).length > 0) {
-           await Telemetry.create({
-             deviceId: updatedDevice?._id,
-             metrics: payload
-           });
-        }
-
-        // --- PHASE 3: Fire new reading into the Automation Engine ---
-        automationEngine.evaluateTelemetry(deviceId, payload);
-
+        return; // Exit telemetry block
       } 
       else if (messageType === 'status') {
         // First check if device is transitioning from offline -> online

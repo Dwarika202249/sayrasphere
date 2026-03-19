@@ -37,11 +37,9 @@ const startSimulation = (devices) => {
         };
         client.publish(topic, JSON.stringify(payload));
       } else if (device.type === 'switch' || device.type === 'bulb') {
-        // Randomly flip status occasionally to show activity
-        if (Math.random() > 0.8) {
-          const topic = `sayrasphere/devices/${device.id}/status`;
-          client.publish(topic, JSON.stringify({ status: Math.random() > 0.5 ? 'online' : 'offline' }));
-        }
+        // Report as online to keep the indicator green
+        const topic = `sayrasphere/devices/${device.id}/status`;
+        client.publish(topic, JSON.stringify({ status: 'online' }));
       }
     });
   }, 5000);
@@ -91,8 +89,9 @@ client.on('message', (topic, message) => {
       }));
       
       if (payload.action === 'toggle') {
-        client.publish(`sayrasphere/devices/${deviceId}/status`, JSON.stringify({ 
-          status: payload.value ? 'online' : 'offline' 
+        // Report the new state via telemetry so it persists in DB
+        client.publish(`sayrasphere/devices/${deviceId}/telemetry`, JSON.stringify({ 
+          state: payload.value 
         }));
       }
     }, 500);

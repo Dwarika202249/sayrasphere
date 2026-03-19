@@ -100,7 +100,7 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device }) => {
             <div className="flex items-center space-x-2">
                {isCommandPending && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
                <Switch 
-                 checked={!!(device.currentValue?.state as boolean)}
+                 checked={device.currentValue?.state === true || device.currentValue?.state === 'true'}
                  onCheckedChange={handleToggle}
                  disabled={isCommandPending}
                />

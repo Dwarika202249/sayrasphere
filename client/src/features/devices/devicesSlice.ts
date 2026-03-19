@@ -80,7 +80,10 @@ const devicesSlice = createSlice({
     ) => {
       const idx = state.items.findIndex((d) => d._id === action.payload.id);
       if (idx !== -1) {
-        state.items[idx].currentValue = action.payload.currentValue;
+        state.items[idx].currentValue = {
+            ...state.items[idx].currentValue,
+            ...action.payload.currentValue
+        };
         state.items[idx].lastPing = action.payload.lastPing;
       }
     },
