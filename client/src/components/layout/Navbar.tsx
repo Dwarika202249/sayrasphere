@@ -20,6 +20,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.clear(); // Ensure all tokens are wiped
     navigate('/login');
   };
 
